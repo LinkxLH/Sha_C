@@ -22,6 +22,7 @@ public class TankDrive extends SubsystemBase{
     private AHRS m_gyro;
     private Vector2d m_currentPoint;
     private double m_lastTimeMilis;
+    private final double m_gearRatio=1, m_diameter=1;
     
     public TankDrive(){
        m_motorLB = new CANSparkMax(0, MotorType.kBrushless);
@@ -32,7 +33,7 @@ public class TankDrive extends SubsystemBase{
        m_motorRB.follow(m_motorRT);
        m_lastTimeMilis = System.currentTimeMillis();
        m_gyro = new AHRS(Port.kMXP);
-       
+       m_motorLB.getEncoder().setVelocityConversionFactor((360 / m_gearRatio)*m_diameter);
     }
 
     public static TankDrive getInstance(){
@@ -58,6 +59,11 @@ public class TankDrive extends SubsystemBase{
     public void drive(double speedL, double speedR){  
         m_motorLT.set(speedL);
         m_motorRT.set(speedR);
+    }
+
+    public void driveStrightMpS(double speedMpS){
+        m_motorLT.getPIDController().setReference(speedMpS, ControlType.kVelocity);
+        m_motorRT.getPIDController().setReference(speedMpS, ControlType.kVelocity);
     }
 
     public void stop(){
