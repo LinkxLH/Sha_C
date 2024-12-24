@@ -7,7 +7,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.Utils.Vector2d;
+import frc.robot.Utils.Vector2d;
 
 public class SwerveModule extends SubsystemBase {
 
