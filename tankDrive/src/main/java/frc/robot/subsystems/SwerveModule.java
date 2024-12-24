@@ -21,10 +21,19 @@ public class SwerveModule extends SubsystemBase {
         m_rotionMotor = new CANSparkMax(rotionId, MotorType.kBrushless);
     }
 
+
     public void setState(Vector2d state){
+        double flipped = flipedPath(m_velocityVector.theta(), state.theta()),
+         shortestPath = shortestPath(m_velocityVector.theta(), state.theta());
+        if(flipped > shortestPath){
+            m_targetAngle = shortestPath(m_velocityVector.theta(), state.theta());
+            m_driveMotor.getPIDController().setReference(state.mag(), ControlType.kVelocity);
+        }
+        else{
+            m_targetAngle = flipedPath(m_velocityVector.theta(), state.theta());
+            m_driveMotor.getPIDController().setReference(-state.mag(), ControlType.kVelocity);
+        }
         m_velocityVector = state;
-        m_driveMotor.getPIDController().setReference(state.mag(), ControlType.kVelocity);
-        turnTo(state.theta());
     }
 
     public Vector2d getstate(){
@@ -33,21 +42,21 @@ public class SwerveModule extends SubsystemBase {
 
     private double shortestPath(double current, double target){
         double deltaAngle = (target % 360) - (current % 360);
-        double flipDeltaAngle = (360 - deltaAngle) % 360; 
         if(Math.abs(deltaAngle) > 180){
-            return flipDeltaAngle;
-            // deltaAngle = -1.0 * Math.signum(deltaAngle) * 360.0 + deltaAngle;
+            deltaAngle = -1.0 * Math.signum(deltaAngle) * 360.0 + deltaAngle;
         }
         return deltaAngle;
     }
 
-    public void turnTo(double targetAngle){
-        m_targetAngle = shortestPath(m_velocityVector.theta(), targetAngle);
+    private double flipedPath(double current, double target){
+        double flipDeltaAngle = (360 - current) % 360; 
+        return flipDeltaAngle;
     }
 
     @Override
     public void periodic(){
-        if(MathUtil.isNear(m_targetAngle, m_rotionMotor.getEncoder().getPosition(), SwerveConsts.MODULE_ROTATION_TOLORENCE)){
+        double angle = m_rotionMotor.getEncoder().getPosition();
+        if(MathUtil.isNear(m_targetAngle, angle, SwerveConsts.MODULE_ROTATION_TOLORENCE)){
             m_rotionMotor.getPIDController().setReference(m_targetAngle, ControlType.kPosition);
         }
        
