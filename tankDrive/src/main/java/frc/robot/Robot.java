@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Subsystems.Swerve.Swerve;
-import frc.robot.Subsystems.Swerve.SwerveLocalizer;
 import frc.robot.Utils.EverKit.Periodic;
 
 public class Robot extends TimedRobot {
@@ -25,7 +23,7 @@ public class Robot extends TimedRobot {
   public static ArrayList<Periodic> testPeriodicFuncs = new ArrayList<Periodic>();
   public static ArrayList<Periodic> autonomousPeriodicFuncs = new ArrayList<Periodic>();
   public static ArrayList<Periodic> simulationPeriodicFuncs = new ArrayList<Periodic>();
-  private static JetsonHealthChecker m_jetsonHealthChecker = new JetsonHealthChecker(5801);
+ 
 
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
@@ -39,7 +37,6 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     
     m_robotContainer = new RobotContainer();
-    Swerve.getInstance().resetGyro();
 
     //create and add robot field data to dashboard
     m_field = new Field2d();
@@ -55,8 +52,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("alliance", m_allianceChooser);
 
     m_autoChooser = new SendableChooser<Command>();
-    m_autoChooser.addOption("middle auto", new PathPlannerAuto("middle auto"));
-    m_autoChooser.addOption("not amp side auto", new PathPlannerAuto("not amp side auto"));
     SmartDashboard.putData("auto", m_autoChooser);
 
 
@@ -75,9 +70,6 @@ public class Robot extends TimedRobot {
     }
 
     // update the robot position of dashboard
-    m_field.setRobotPose(SwerveLocalizer.getInstance().getCurrentPoint().getX(),
-                         SwerveLocalizer.getInstance().getCurrentPoint().getY(),
-                        new Rotation2d(Math.toRadians(SwerveLocalizer.getInstance().getCurrentPoint().getAngle())));
 
   }
 
