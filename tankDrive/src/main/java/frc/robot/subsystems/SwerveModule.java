@@ -8,17 +8,28 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Utils.Vector2d;
+import frc.robot.Utils.EverKit.EverEncoder;
+import frc.robot.Utils.EverKit.EverMotorController;
+import frc.robot.Utils.EverKit.EverPIDController;
+import frc.robot.Utils.EverKit.Implementations.Encoders.EverSparkInternalEncoder;
+import frc.robot.Utils.EverKit.Implementations.MotorControllers.EverSparkMax;
+import frc.robot.Utils.EverKit.Implementations.PIDControllers.EverSparkMaxPIDController;
 
 public class SwerveModule extends SubsystemBase {
 
     private Vector2d m_velocityVector;
 
-    private CANSparkMax m_driveMotor, m_rotionMotor;
+    private EverMotorController m_driveMotor, m_rotionMotor;
     private double m_targetAngle;
+    private EverPIDController m_drivePid, m_rotionPid;
+    private EverEncoder m_Encoder;
 
     public SwerveModule(int driveId, int rotionId){
-        m_driveMotor = new CANSparkMax(driveId, MotorType.kBrushless);
-        m_rotionMotor = new CANSparkMax(rotionId, MotorType.kBrushless);
+        m_driveMotor = new EverSparkMax(0);
+        m_rotionMotor = new EverSparkMax(0);
+        m_drivePid = new EverSparkMaxPIDController((EverSparkMax)m_driveMotor);
+        m_rotionPid = new EverSparkMaxPIDController((EverSparkMax)m_rotionMotor);
+        m_Encoder = new EverSparkInternalEncoder((EverSparkMax)m_rotionMotor);
     }
 
 
@@ -27,11 +38,11 @@ public class SwerveModule extends SubsystemBase {
          shortestPath = shortestPath(m_velocityVector.theta(), state.theta());
         if(flipped > shortestPath){
             m_targetAngle = shortestPath(m_velocityVector.theta(), state.theta());
-            m_driveMotor.getPIDController().setReference(state.mag(), ControlType.kVelocity);
+            m_drivePid.activate(state.mag(), ControlType.kVel);
         }
         else{
             m_targetAngle = flipedPath(m_velocityVector.theta(), state.theta());
-            m_driveMotor.getPIDController().setReference(-state.mag(), ControlType.kVelocity);
+            m_drivePid.activate(-state.mag(), ControlType.kVel);
         }
         m_velocityVector = state;
     }
@@ -55,9 +66,9 @@ public class SwerveModule extends SubsystemBase {
 
     @Override
     public void periodic(){
-        double angle = m_rotionMotor.getEncoder().getPosition();
+        double angle = m_Encoder.getPos();
         if(MathUtil.isNear(m_targetAngle, angle, SwerveConsts.MODULE_ROTATION_TOLORENCE)){
-            m_rotionMotor.getPIDController().setReference(m_targetAngle, ControlType.kPosition);
+            m_rotionPid.activate(m_targetAngle, ControlType.kPos);
         }
        
     }
